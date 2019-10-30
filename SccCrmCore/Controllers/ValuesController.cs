@@ -12,9 +12,9 @@ namespace SccCrmCore.Controllers
     {
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public ActionResult<IEnumerable<object>> Get()
         {
-            return new string[] { "value1", "value2" };
+            return new object[] { "value1", "value2" };
         }
 
         // GET api/values/5
