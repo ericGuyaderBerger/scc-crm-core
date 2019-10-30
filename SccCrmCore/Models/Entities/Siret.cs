@@ -6,23 +6,24 @@ using System.Threading.Tasks;
 
 namespace SccCrmCore.Models.Entities
 {
-    public class Siren
+    public class Siret
     {
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(9)]
+        [MinLength(14)]
+        [MaxLength(14)]
         public string Numero { get; set; }
 
         [Required]
         [MaxLength(100)]
         public string Nom { get; set; }
-        
-        public bool Actif { get; set; } = false;
 
         [Required]
-        public DateTime DateMaj { get; set; } = DateTime.Now;
+        public string Adresse { get; set; }
 
-        public IEnumerable<Siret> Sirets { get; set; }
+        [Required]
+        public int SirenId { get; set; }
+        public Siren Siren { get; set; }
     }
 }
