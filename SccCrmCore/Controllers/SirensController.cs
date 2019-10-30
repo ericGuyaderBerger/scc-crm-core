@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SccCrmCore.Models;
+using SccCrmCore.Models.Dto;
+using SccCrmCore.Models.Entities;
 
 namespace SccCrmCore.Controllers
 {
@@ -83,12 +84,19 @@ namespace SccCrmCore.Controllers
 
         // POST: api/Sirens
         [HttpPost]
-        public async Task<IActionResult> PostSiren([FromBody] Siren siren)
+        public async Task<IActionResult> PostSiren([FromBody] SirenForInsertDto sirenDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
+            Siren siren = new Siren()
+            {
+                Nom = sirenDto.Nom,
+                Numero = sirenDto.Numero,
+                Actif = sirenDto.Actif
+            };
 
             _context.Sirens.Add(siren);
             await _context.SaveChangesAsync();

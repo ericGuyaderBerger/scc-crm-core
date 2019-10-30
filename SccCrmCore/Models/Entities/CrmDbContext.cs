@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SccCrmCore.Models
+namespace SccCrmCore.Models.Entities
 {
     public class CrmDbContext : DbContext
     {

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SccCrmCore.Models
+namespace SccCrmCore.Models.Entities
 {
     public class Siren
     {
@@ -12,7 +12,6 @@ namespace SccCrmCore.Models
 
         [Required]
         [MaxLength(9)]
-        [RegularExpression("^\\d{9}$")]
         public string Numero { get; set; }
 
         [Required]
