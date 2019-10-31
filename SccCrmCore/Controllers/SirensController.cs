@@ -26,9 +26,20 @@ namespace SccCrmCore.Controllers
 
         // GET: api/Sirens
         [HttpGet]
-        public IEnumerable<Siren> GetSirens()
+        public IEnumerable<Siren> GetSirens([FromQuery] string numero = null,
+            [FromQuery] string nom = null)
         {
-            return _context.Sirens;
+            IEnumerable<Siren> results = _context.Sirens;
+            if(numero != null)
+            {
+                results=results.Where(s => s.Numero == numero);
+            }
+            if (nom != null)
+            {
+                results = results.Where(s => s.Nom.Contains(nom,StringComparison.InvariantCultureIgnoreCase) );
+            }
+
+            return results;
         }
 
         // GET: api/Sirens/5
