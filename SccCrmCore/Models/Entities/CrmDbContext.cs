@@ -17,6 +17,5 @@ namespace SccCrmCore.Models.Entities
         public DbSet<Siren> Sirens { get; set; }
         public DbSet<Siret> Sirets { get; set; }
         
-
     }
 }

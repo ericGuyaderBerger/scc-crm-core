@@ -31,7 +31,11 @@ namespace SccCrmCore
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<CrmDbContext>(o =>
-                o.UseSqlServer(Configuration.GetConnectionString("LocalSqlServer")));
+                o.UseSqlServer(
+                    Configuration.GetConnectionString("LocalSqlServer")
+                    //,sqlOptions => sqlOptions.UseRowNumberForPaging()
+                )
+            );
 
             var mappingConfig = new MapperConfiguration(mc => {
                    mc.AddProfile(new MappingProfile());

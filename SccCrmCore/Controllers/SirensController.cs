@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SccCrmCore.Models.Dto;
 using SccCrmCore.Models.Entities;
 
@@ -17,19 +18,30 @@ namespace SccCrmCore.Controllers
     {
         private readonly CrmDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _config;
 
-        public SirensController(CrmDbContext context, IMapper mapper)
+        public SirensController(CrmDbContext context, IMapper mapper, IConfiguration config)
         {
             _context = context;
             _mapper = mapper;
+            _config = config;
         }
 
         // GET: api/Sirens
         [HttpGet]
         public IEnumerable<Siren> GetSirens([FromQuery] string numero = null,
-            [FromQuery] string nom = null)
+            [FromQuery] string nom = null, [FromQuery] int page = 1, 
+            [FromQuery] int pageSize = 0)
         {
-            IEnumerable<Siren> results = _context.Sirens;
+            int pageSizeLimit = Convert.ToInt32(_config["Paging:pageSizeLimit"]);
+            if (pageSize == 0)
+            {
+                pageSize = Convert.ToInt32(_config["Paging:pageSize"]);
+            }
+            pageSize = (pageSize > pageSizeLimit) ? pageSizeLimit : pageSize;
+
+            IEnumerable<Siren> results = _context.Sirens.Skip(pageSize * (page - 1))
+                .Take(pageSize);
             if(numero != null)
             {
                 results=results.Where(s => s.Numero == numero);
@@ -38,7 +50,10 @@ namespace SccCrmCore.Controllers
             {
                 results = results.Where(s => s.Nom.Contains(nom,StringComparison.InvariantCultureIgnoreCase) );
             }
-
+            results = results
+                .Skip(pageSize * (page-1))
+                .Take(pageSize)
+                ;
             return results;
         }
 
