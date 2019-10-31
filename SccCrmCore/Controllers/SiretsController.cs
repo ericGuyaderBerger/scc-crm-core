@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SccCrmCore.Models.Dto;
 using SccCrmCore.Models.Entities;
 
 namespace SccCrmCore.Controllers
@@ -14,10 +16,12 @@ namespace SccCrmCore.Controllers
     public class SiretsController : ControllerBase
     {
         private readonly CrmDbContext _context;
+        private readonly IMapper _mapper;
 
-        public SiretsController(CrmDbContext context)
+        public SiretsController(CrmDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Sirets
@@ -55,6 +59,7 @@ namespace SccCrmCore.Controllers
                 return BadRequest(ModelState);
             }
 
+            
             if (id != siret.Id)
             {
                 return BadRequest();
@@ -83,12 +88,21 @@ namespace SccCrmCore.Controllers
 
         // POST: api/Sirets
         [HttpPost]
-        public async Task<IActionResult> PostSiret([FromBody] Siret siret)
+        public async Task<IActionResult> PostSiret([FromBody] SiretForInsertDto siretDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
+            // Check si le Siren existe, sinon, 404
+            var sirenId = siretDto.SirenId;
+            if(await _context.Sirens.FindAsync(sirenId) == null)
+            {
+                return NotFound("Siren inexistant");
+            }
+
+            Siret siret = _mapper.Map<Siret>(siretDto);
 
             _context.Sirets.Add(siret);
             await _context.SaveChangesAsync();

@@ -23,6 +23,6 @@ namespace SccCrmCore.Models.Entities
         [Required]
         public DateTime DateMaj { get; set; } = DateTime.Now;
 
-        public IEnumerable<Siret> Sirets { get; set; }
+        //public IEnumerable<Siret> Sirets { get; set; }
     }
 }
