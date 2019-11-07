@@ -13,7 +13,9 @@ namespace SccCrmCore.Services
         public MappingProfile()
         {
             CreateMap<SirenForInsertDto, Siren>();
+            CreateMap<SirenForUpdateDto, Siren>();
             CreateMap<SiretForInsertDto, Siret>();
+
         }
     }
 }

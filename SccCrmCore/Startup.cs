@@ -43,6 +43,8 @@ namespace SccCrmCore
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
 
+            services.AddTransient<IPersistanceLayer, SqlServerPersistenceLayer>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
         }

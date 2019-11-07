@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SccCrmCore.Models.Dto;
 using SccCrmCore.Models.Entities;
+using SccCrmCore.Services;
 
 namespace SccCrmCore.Controllers
 {
@@ -16,11 +17,11 @@ namespace SccCrmCore.Controllers
     [ApiController]
     public class SirensController : ControllerBase
     {
-        private readonly CrmDbContext _context;
+        private readonly IPersistanceLayer _context;
         private readonly IMapper _mapper;
         private readonly IConfiguration _config;
 
-        public SirensController(CrmDbContext context, IMapper mapper, IConfiguration config)
+        public SirensController(IPersistanceLayer context, IMapper mapper, IConfiguration config)
         {
             _context = context;
             _mapper = mapper;
@@ -33,28 +34,12 @@ namespace SccCrmCore.Controllers
             [FromQuery] string nom = null, [FromQuery] int page = 1, 
             [FromQuery] int pageSize = 0)
         {
-            int pageSizeLimit = Convert.ToInt32(_config["Paging:pageSizeLimit"]);
             if (pageSize == 0)
             {
                 pageSize = Convert.ToInt32(_config["Paging:pageSize"]);
             }
-            pageSize = (pageSize > pageSizeLimit) ? pageSizeLimit : pageSize;
-
-            IEnumerable<Siren> results = _context.Sirens.Skip(pageSize * (page - 1))
-                .Take(pageSize);
-            if(numero != null)
-            {
-                results=results.Where(s => s.Numero == numero);
-            }
-            if (nom != null)
-            {
-                results = results.Where(s => s.Nom.Contains(nom,StringComparison.InvariantCultureIgnoreCase) );
-            }
-            results = results
-                .Skip(pageSize * (page-1))
-                .Take(pageSize)
-                ;
-            return results;
+            
+            return _context.getSirens(page, pageSize, numero, nom);
         }
 
         // GET: api/Sirens/5
@@ -66,7 +51,7 @@ namespace SccCrmCore.Controllers
                 return BadRequest(ModelState);
             }
 
-            var siren = await _context.Sirens.FindAsync(id);
+            var siren = await _context.getSirenFromIdAsync(id);
 
             if (siren == null)
             {
@@ -78,7 +63,7 @@ namespace SccCrmCore.Controllers
 
         // PUT: api/Sirens/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSiren([FromRoute] int id, [FromBody] Siren siren)
+        public async Task<IActionResult> PutSiren([FromRoute] int id, [FromBody] SirenForUpdateDto siren)
         {
             if (!ModelState.IsValid)
             {
@@ -90,23 +75,15 @@ namespace SccCrmCore.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(siren).State = EntityState.Modified;
+            Siren sirenEntity = await _context.getSirenFromIdAsync(id);
 
-            try
+            if (sirenEntity == null)
             {
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SirenExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+
+            _mapper.Map(siren,sirenEntity);
+            await _context.SaveAsync();
 
             return NoContent();
         }
@@ -121,9 +98,15 @@ namespace SccCrmCore.Controllers
             }
 
             Siren siren = _mapper.Map<Siren>(sirenDto);
-
-            _context.Sirens.Add(siren);
-            await _context.SaveChangesAsync();
+            try
+            {
+               await _context.insertSirenAsync(siren);
+     
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, "Erreur lors de l'ajout du Siren");
+            }
 
             return CreatedAtAction("GetSiren", new { id = siren.Id }, siren);
         }
@@ -137,21 +120,25 @@ namespace SccCrmCore.Controllers
                 return BadRequest(ModelState);
             }
 
-            var siren = await _context.Sirens.FindAsync(id);
+            var siren = await _context.getSirenFromIdAsync(id);
             if (siren == null)
             {
                 return NotFound();
             }
 
-            _context.Sirens.Remove(siren);
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.deleteSirenAsync(siren);
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, "An error has occured while triyng to delete siren");
+            }
 
             return Ok(siren);
         }
 
-        private bool SirenExists(int id)
-        {
-            return _context.Sirens.Any(e => e.Id == id);
-        }
+        
     }
 }
